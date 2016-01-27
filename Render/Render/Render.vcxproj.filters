@@ -21,12 +21,18 @@
     <ClInclude Include="math.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="poly.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="math.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

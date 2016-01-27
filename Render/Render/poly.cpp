@@ -53,3 +53,67 @@ void Transform_RenderList4D(RenderList4D_PTR render_list, Matrix4X4_PTR matrix, 
 		break;
 	}
 }
+
+//transform_basis 表示是否要对朝向向量进行变换
+void Transform_Object4D(Object4D_PTR object, Matrix4X4_PTR matrix, int coord_select,int transform_basis)
+{
+	switch (coord_select)
+	{
+	case TRANSFORM_LOCAL_ONLY:
+		for (int vertex = 0; vertex < object->num_vertices; vertex++)
+		{
+			Vector4D result;
+			Vector4D_PTR vector = &object->vlist_local[vertex].v;
+			Mat_Mul_Vector4D_4X4(vector, matrix, &result);
+			Vector4D_COPY(&object->vlist_local[vertex].v, &result);
+		}
+		break;
+	case TRANSFORM_TRANS_ONLY:
+		for (int vertex = 0; vertex < object->num_vertices; vertex++)
+		{
+			Vector4D result;
+			Vector4D_PTR vector = &object->vlist_trans[vertex].v;
+			Mat_Mul_Vector4D_4X4(vector, matrix, &result);
+			Vector4D_COPY(&object->vlist_trans[vertex].v, &result);
+		}
+		break;
+	case TRANSFORM_LOCAL_TO_TRANS:
+		for (int vertex = 0; vertex < object->num_vertices; vertex++)
+		{
+			Mat_Mul_Vector4D_4X4(&object->vlist_local[vertex].v, matrix, &object->vlist_trans[vertex].v);
+		}
+		break;
+	default:
+		break;
+	}
+
+	if (transform_basis)
+	{
+		Vector4D result;
+
+		//旋转ux
+		Mat_Mul_Vector4D_4X4(&object->ux, matrix, &result);
+		Vector4D_COPY(&object->ux, &result);
+
+		//旋转uy
+		Mat_Mul_Vector4D_4X4(&object->uy, matrix, &result);
+		Vector4D_COPY(&object->uy, &result);
+
+		//旋转uz
+		Mat_Mul_Vector4D_4X4(&object->uz, matrix, &result);
+		Vector4D_COPY(&object->uz, &result);
+	}
+}
+
+void Build_Model_To_World_MATRIX4X4(Vector4D_PTR pos, Matrix4X4_PTR m)
+{
+	Mat_Init_4X4(m, 1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		pos->x, pos->y, pos->z, 1);
+}
+
+void Model_To_World_Object4D(Object4D_PTR object, Matrix4X4 matrix, int coord_select = TRANSFORM_LOCAL_TO_TRANS)
+{
+
+}
