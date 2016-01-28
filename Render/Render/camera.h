@@ -1,5 +1,18 @@
+#ifndef H_CAMERA
+#define H_CAMERA
+
 #include "math.h"
 #include "poly.h"
+
+#define CAM_ROT_SEQ_XYZ  0
+#define CAM_ROT_SEQ_YXZ  1
+#define CAM_ROT_SEQ_XZY  2
+#define CAM_ROT_SEQ_YZX  3
+#define CAM_ROT_SEQ_ZYX  4
+#define CAM_ROT_SEQ_ZXY  5
+
+#define UVN_MODE_SPHERICAL	0
+
 
 typedef struct Camera4D_TYP
 {
@@ -16,8 +29,8 @@ typedef struct Camera4D_TYP
 
 	Point4D target;			//uvn模型的目标位置
 
-	float view_dist_h;		//水平视距
-	float view_dist_v;		//垂直视距
+	float view_dist;		//水平视距
+	//float view_dist_v;		//垂直视距
 
 	float fov;				//水平方向和垂直方向的视野
 
@@ -54,3 +67,5 @@ void Init_Camera4D(Camera4D_PTR camera,
 	float fov,
 	float viewport_width,
 	float viewport_height);
+
+#endif

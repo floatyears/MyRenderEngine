@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "poly.h"
 #include "math.h"
+#include "camera.h"
 
 void Transform_RenderList4D(RenderList4D_PTR render_list, Matrix4X4_PTR matrix, int coord_selct)
 {
@@ -17,7 +18,7 @@ void Transform_RenderList4D(RenderList4D_PTR render_list, Matrix4X4_PTR matrix, 
 			{
 				Vector4D result;
 				Mat_Mul_Vector4D_4X4(&curr_poly->verts[j].v, matrix, &result);
-				Vector4D_COPY(&curr_poly->verts[j].v, &result);
+				Vector4D_Copy(&curr_poly->verts[j].v, &result);
 			}
 		}
 		break;
@@ -45,7 +46,7 @@ void Transform_RenderList4D(RenderList4D_PTR render_list, Matrix4X4_PTR matrix, 
 			{
 				Vector4D result;
 				Mat_Mul_Vector4D_4X4(&curr_poly->tverts[vertex].v, matrix, &result);
-				Vector4D_COPY(&curr_poly->tverts[vertex].v, &result);
+				Vector4D_Copy(&curr_poly->tverts[vertex].v, &result);
 			}
 		}
 		break;
@@ -65,7 +66,7 @@ void Transform_Object4D(Object4D_PTR object, Matrix4X4_PTR matrix, int coord_sel
 			Vector4D result;
 			Vector4D_PTR vector = &object->vlist_local[vertex].v;
 			Mat_Mul_Vector4D_4X4(vector, matrix, &result);
-			Vector4D_COPY(&object->vlist_local[vertex].v, &result);
+			Vector4D_Copy(&object->vlist_local[vertex].v, &result);
 		}
 		break;
 	case TRANSFORM_TRANS_ONLY:
@@ -74,7 +75,7 @@ void Transform_Object4D(Object4D_PTR object, Matrix4X4_PTR matrix, int coord_sel
 			Vector4D result;
 			Vector4D_PTR vector = &object->vlist_trans[vertex].v;
 			Mat_Mul_Vector4D_4X4(vector, matrix, &result);
-			Vector4D_COPY(&object->vlist_trans[vertex].v, &result);
+			Vector4D_Copy(&object->vlist_trans[vertex].v, &result);
 		}
 		break;
 	case TRANSFORM_LOCAL_TO_TRANS:
@@ -93,15 +94,15 @@ void Transform_Object4D(Object4D_PTR object, Matrix4X4_PTR matrix, int coord_sel
 
 		//旋转ux
 		Mat_Mul_Vector4D_4X4(&object->ux, matrix, &result);
-		Vector4D_COPY(&object->ux, &result);
+		Vector4D_Copy(&object->ux, &result);
 
 		//旋转uy
 		Mat_Mul_Vector4D_4X4(&object->uy, matrix, &result);
-		Vector4D_COPY(&object->uy, &result);
+		Vector4D_Copy(&object->uy, &result);
 
 		//旋转uz
 		Mat_Mul_Vector4D_4X4(&object->uz, matrix, &result);
-		Vector4D_COPY(&object->uz, &result);
+		Vector4D_Copy(&object->uz, &result);
 	}
 }
 
@@ -116,4 +117,33 @@ void Build_Model_To_World_MATRIX4X4(Vector4D_PTR pos, Matrix4X4_PTR m)
 void Model_To_World_Object4D(Object4D_PTR object, Matrix4X4 matrix, int coord_select = TRANSFORM_LOCAL_TO_TRANS)
 {
 
+}
+
+void Remove_Backfaces_RenderList4D(RenderList4D_PTR render_list, Camera4D_PTR camera)
+{
+	for (int poly = 0; poly < render_list->num_polys; poly++)
+	{
+		Poly4D_PTR curr_poly = render_list->poly_ptrs[poly];
+		if (curr_poly == NULL || !(curr_poly->state & POLY4D_STATE_ACTIVE) || curr_poly->state & POLY4D_STATE_CLIPPED || curr_poly->state & POLY4D_STATE_BACKFACE || curr_poly->attr & POLY4D_ATTR_2SIDED)
+			continue;
+
+		Vector4D u, v, n;
+
+		//计算法线向量
+		Vector4D_Build(&curr_poly->tverts[0].v, &curr_poly->tverts[1].v, &u);
+		Vector4D_Build(&curr_poly->tverts[0].v, &curr_poly->tverts[2].v, &v);
+
+		Vector4D_Cross(&u, &v, &n);
+		
+		//创建指向视点的向量
+		Vector4D view;
+		Vector4D_Build(&curr_poly->tverts[0].v, &camera->pos, &view);
+
+		float dp = Vector4D_Dot(&view, &n);
+
+		if (dp <= 0.0)
+		{
+			SET_BIT(curr_poly->state, POLY4D_STATE_BACKFACE);
+		}
+	}
 }

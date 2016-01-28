@@ -1,3 +1,6 @@
+#ifndef H_POLY
+#define H_POLY
+
 //坐标变换
 #define TRANSFORM_LOCAL_ONLY			1
 #define TRANSFORM_TRANS_ONLY			2
@@ -8,6 +11,8 @@
 #define POLY4D_STATE_VISIBLE			0x0002
 #define POLY4D_STATE_BACKFACE			0x0004
 #define POLY4D_STATE_CLIPPED			0x0008
+
+#define POLY4D_ATTR_2SIDED				0x0001
 
 #define RENDERLIST4D_MAX_POLYS	256
 
@@ -28,6 +33,20 @@ typedef struct Vector4D_TYP
 		};
 	};
 }Vector4D, *Vector4D_PTR, Point4D, *Point4D_PTR;
+
+typedef struct Vector3D_TYP
+{
+	union
+	{
+		float M[3];
+		struct
+		{
+			float x;
+			float y;
+			float z;
+		};
+	};
+}Vector3D, *Vector3D_PTR, Point3D, *Point3D_PTR;
 
 //顶点定义
 typedef struct Vertex4D_TYP
@@ -111,8 +130,10 @@ typedef struct RenderList4D_TYP
 	int num_polys;				//渲染列表中的多边形数目
 }RenderList4D, *RenderList4D_PTR;
 
-typedef struct Plane3D
+typedef struct Plane3D_TYP
 {
-	Point4D p0;		//平面上的一个点
-	Vector4D n;		//平面的法线
-};
+	Point3D p0;		//平面上的一个点
+	Vector3D n;		//平面的法线
+}Plane3D, *Plane3D_PTR;
+
+#endif
