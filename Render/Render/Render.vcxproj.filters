@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\example">
+      <UniqueIdentifier>{ee8d6aeb-1b5f-4f2f-b44c-1a4db2aa81ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="poly.h">
@@ -22,6 +25,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="draw.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -34,6 +40,12 @@
     </ClCompile>
     <ClCompile Include="camera.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="draw.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="sample1cpp.cpp">
+      <Filter>源文件\example</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -111,6 +111,14 @@ void Vector4D_Zero(Vector4D_PTR vector)
 	vector->z = 0;
 }
 
+void Vector4D_Div_By_W(Vector4D_PTR vector)
+{
+	vector->x /= vector->w;
+	vector->y /= vector->y;
+	vector->z /= vector->z;
+	vector->w = 1;
+}
+
 void Point3D_Copy(Point3D_PTR dest, Point3D_PTR source)
 {
 	dest->x = source->x;

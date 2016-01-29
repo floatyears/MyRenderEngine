@@ -29,8 +29,8 @@ typedef struct Camera4D_TYP
 
 	Point4D target;			//uvn模型的目标位置
 
-	float view_dist;		//水平视距
-	//float view_dist_v;		//垂直视距
+	float view_dist_h;		//水平视距
+	float view_dist_v;		//垂直视距
 
 	float fov;				//水平方向和垂直方向的视野
 

@@ -44,6 +44,7 @@ void Vector4D_Build(Vector4D_PTR va, Vector4D_PTR vb, Vector4D_PTR result);
 void Vector4D_Cross(Vector4D_PTR va, Vector4D_PTR vb, Vector4D_PTR result);
 float Vector4D_Dot(Vector4D_PTR va, Vector4D_PTR vb);
 void Vector4D_Normalize(Vector4D_PTR vector);
+void Vector4D_Div_By_W(Vector4D_PTR vector);
 
 void Vector3D_Copy(Vector3D_PTR dest, Vector3D_PTR source);
 void Vector3D_Zero(Vector3D_PTR vector);

@@ -12,7 +12,18 @@
 #define POLY4D_STATE_BACKFACE			0x0004
 #define POLY4D_STATE_CLIPPED			0x0008
 
+//多边形的属性
 #define POLY4D_ATTR_2SIDED				0x0001
+
+//物体的状态
+#define OBJECT4D_STATE_ACTIVE			0x0001
+#define OBJECT4D_STATE_VISIBLE			0x0002
+#define OBJECT4D_STATE_CULLED			0x0004
+
+#define CULL_OBJECT_X_PLANE				0x0001
+#define CULL_OBJECT_Y_PLANE				0x0002
+#define CULL_OBJECT_Z_PLANE				0x0004
+
 
 #define RENDERLIST4D_MAX_POLYS	256
 
@@ -109,6 +120,9 @@ typedef struct Object4D_TYP
 	Point4D world_pos;
 	Vector4D dir;				//物体在局部坐标系中的朝向
 	Vector4D ux, uy, uz;		//记录物体朝向的局部坐标轴，物体旋转时，将相应的旋转
+
+	float max_radius;			//最大半径
+	float avg_radius;			//平均半径
 	
 	int num_vertices;			//物体的顶点数
 	Vertex4D vlist_local[OBJECT4D_MAX_VERTICES];	//存储局部坐标的数组

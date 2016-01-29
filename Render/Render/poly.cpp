@@ -147,3 +147,67 @@ void Remove_Backfaces_RenderList4D(RenderList4D_PTR render_list, Camera4D_PTR ca
 		}
 	}
 }
+
+//flags表示要考虑的裁剪面
+int Cull_Object4D(Object4D_PTR object, Camera4D_PTR camera, int cull_flags)
+{
+	Point4D sphere_pos;
+
+	//1.将物体包围球的球心变为相机坐标
+	Mat_Mul_Vector4D_4X4(&object->world_pos, &camera->mcam, &sphere_pos);
+
+	if (cull_flags & CULL_OBJECT_Z_PLANE)
+	{
+		//使用远近裁剪面进行测试
+		if (sphere_pos.z - object->max_radius > camera->far_clip_z || sphere_pos.z + object->max_radius < camera->near_clip_z)
+			SET_BIT(object->state, OBJECT4D_STATE_CULLED);
+		return 1;
+	}
+
+	if (cull_flags & CULL_OBJECT_Y_PLANE)
+	{
+		//这里用相似三角形来做，使用右裁剪面和左裁剪面检测包围球最上边和最右边的点(这里不完全正确，不过好在方法简单)
+		float z_test = 0.5*camera->viewplane_height * sphere_pos.z / camera->view_dist_v;
+		if (sphere_pos.y - object->max_radius > z_test || sphere_pos.y + object->max_radius < -z_test)
+			SET_BIT(object->state, OBJECT4D_STATE_CULLED);
+	}
+
+	if (cull_flags & CULL_OBJECT_X_PLANE)
+	{
+		float z_test = 0.5*camera->viewplane_width * sphere_pos.z / camera->view_dist_h;
+		if (sphere_pos.x - object->max_radius > z_test || sphere_pos.x + object->max_radius < -z_test)
+			SET_BIT(object->state, OBJECT4D_STATE_CULLED);
+	}
+}
+
+void Remove_Backfaces_Object4D(Object4D_PTR object, Camera4D_PTR camera)
+{
+	if (object->state & OBJECT4D_STATE_CULLED)
+		return;
+
+	for (int poly = 0; poly < object->num_polys; poly++)
+	{
+		PolyF4D_PTR curr_poly = &object->plist[poly];
+
+		if (!(curr_poly->state & POLY4D_STATE_ACTIVE) || curr_poly->state & POLY4D_STATE_CLIPPED || curr_poly->state & POLY4D_STATE_BACKFACE || curr_poly->attr & POLY4D_ATTR_2SIDED)
+			continue;
+
+		int vindex_0 = curr_poly->vert[0];
+		int vindex_1 = curr_poly->vert[1];
+		int vindex_2 = curr_poly->vert[2];
+
+		//计算三角形的法线
+		Vector4D u, v, n;
+		Vector4D_Build(&object->vlist_trans[vindex_0].v, &object->vlist_trans[vindex_1].v, &u);
+		Vector4D_Build(&object->vlist_trans[vindex_0].v, &object->vlist_trans[vindex_2].v, &v);
+		Vector4D_Build(&u, &v, &n);
+
+		//计算指向视点的向量
+		Vector4D view;
+		Vector4D_Build(&object->vlist_trans[0].v, &camera->pos, &view);
+
+		float dp = Vector4D_Dot(&n, &view);
+		if (dp <= 0.0)
+			SET_BIT(object->state, POLY4D_STATE_BACKFACE);
+	}
+}

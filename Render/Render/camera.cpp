@@ -50,7 +50,7 @@ void Init_Camera4D(Camera4D_PTR camera,
 
 	float tan_fov_div2 = tan(DEG_TO_RAD(fov / 2));
 
-	camera->view_dist = 0.5 * camera->viewplane_width * tan_fov_div2;
+	camera->view_dist_h = 0.5 * camera->viewplane_width * tan_fov_div2;
 
 	if (fov == 90.0)
 	{
@@ -83,16 +83,16 @@ void Init_Camera4D(Camera4D_PTR camera,
 
 		Vector3D vn;
 
-		Vector3D_InitXYZ(&vn, camera->view_dist, 0, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, camera->view_dist_h, 0, -camera->viewplane_width / 2.0);
 		Plane3D_Init(&camera->rt_clip_plane, &pt_origin, &vn, 1);
 
-		Vector3D_InitXYZ(&vn, -camera->view_dist, 0, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, -camera->view_dist_h, 0, -camera->viewplane_width / 2.0);
 		Plane3D_Init(&camera->lt_clip_plane, &pt_origin, &vn, 1);
 
-		Vector3D_InitXYZ(&vn, 0, camera->view_dist, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, 0, camera->view_dist_h, -camera->viewplane_width / 2.0);
 		Plane3D_Init(&camera->tp_clip_plane, &pt_origin, &vn, 1);
 
-		Vector3D_InitXYZ(&vn, 0, -camera->view_dist, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, 0, -camera->view_dist_h, -camera->viewplane_width / 2.0);
 		Plane3D_Init(&camera->bt_clip_plane, &pt_origin, &vn, 1);
 	}
 }
@@ -232,3 +232,103 @@ void Build_Camera4D_Matrix_UVN(Camera4D_PTR camera, int mode)
 	//½«Æ½ÒÆ¾ØÕó³ËÒÔuvn¾ØÕó£¬
 	Mat_Mul_4X4(&mt_inv, &mt_uvn, &camera->mcam);
 }
+
+void Camera_To_Perspective_Object4D(Object4D_PTR object, Camera4D_PTR camera)
+{
+	for (int vertex = 0; vertex < object->num_vertices; vertex++)
+	{
+		float z = object->vlist_trans[vertex].z;
+
+		object->vlist_trans[vertex].x = camera->view_dist_h * object->vlist_trans[vertex].x / z;
+		object->vlist_trans[vertex].y = camera->view_dist_v * object->vlist_trans[vertex].y * camera->aspect_ratio / z;
+	}
+}
+
+void Convert_From_Homogeneous4D_Object4D(Object4D_PTR object)
+{
+	for (int vertex = 0; vertex < object->num_vertices; vertex++)
+	{
+		Vector4D_Div_By_W(&object->vlist_trans[vertex]);
+	}
+}
+
+void Camera_To_Perspective_RenderList4D(RenderList4D_PTR render_list, Camera4D_PTR camera)
+{
+	for (int poly = 0; poly < render_list->num_polys; poly++)
+	{
+		Poly4D_PTR curr_poly = render_list->poly_ptrs[poly];
+		if (curr_poly == NULL || !(curr_poly->state & POLY4D_STATE_ACTIVE) || curr_poly->state & POLY4D_STATE_CLIPPED || curr_poly->state & POLY4D_STATE_BACKFACE)
+			continue;
+		for (int vertex = 0; vertex < 3; vertex++)
+		{
+			float z = curr_poly->tverts[vertex].z;
+			curr_poly->tverts[vertex].x = camera->view_dist_h * curr_poly->tverts[vertex].x / z;
+			curr_poly->tverts[vertex].y = camera->view_dist_v * curr_poly->tverts[vertex].y * camera->aspect_ratio / z;
+		}
+	}
+}
+
+void Convert_From_Homogeneous4D_RenderList4D(RenderList4D_PTR render_list)
+{
+	for (int poly = 0; poly < render_list->num_polys; poly++)
+	{
+		Poly4D_PTR curr_poly = render_list->poly_ptrs[poly];
+		if (curr_poly == NULL || !(curr_poly->state & POLY4D_STATE_ACTIVE) || curr_poly->state & POLY4D_STATE_CLIPPED || curr_poly->state & POLY4D_STATE_BACKFACE)
+			continue;
+		for (int vertex = 0; vertex < 3; vertex++)
+		{
+			Vector4D_Div_By_W(&curr_poly->tverts[vertex]);
+		}
+	}
+}
+
+
+void Build_Camera_To_Perspective_Matrix4X4(Camera4D_PTR camera, Matrix4X4_PTR matrix)
+{
+	Mat_Init_4X4(matrix, camera->view_dist_h, 0, 0, 0,
+		0, camera->view_dist_v*camera->aspect_ratio, 0, 0,
+		0, 0, 1, 1,
+		0, 0, 0, 0);
+}
+
+void Perspective_To_Screen_Object4D(Object4D_PTR object, Camera4D_PTR camera)
+{
+	float alpha = 0.5*camera->viewplane_width - 0.5;
+	float beta = 0.5*camera->viewplane_height - 0.5;
+
+	for (int vertex = 0; vertex < object->num_vertices; vertex++)
+	{
+		object->vlist_trans[vertex].x = alpha + alpha*object->vlist_trans[vertex].x;
+		object->vlist_trans[vertex].y = beta + beta*object->vlist_trans[vertex].y;
+	}
+}
+
+void Perspective_To_Screen_RenderList4D(RenderList4D_PTR render_list, Camera4D_PTR camera)
+{
+	float alpha = 0.5*camera->viewplane_width - 0.5;
+	float beta = 0.5*camera->viewplane_height - 0.5;
+
+	for (int poly = 0; poly < render_list->num_polys; poly++)
+	{
+		Poly4D_PTR curr_poly = render_list->poly_ptrs[poly];
+		if (curr_poly == NULL || !(curr_poly->state & POLY4D_STATE_ACTIVE) || curr_poly->state & POLY4D_STATE_CLIPPED || curr_poly->state & POLY4D_STATE_BACKFACE)
+			continue;
+		for (int vertex = 0; vertex < 3; vertex++)
+		{
+			curr_poly->tverts[vertex].x = alpha + alpha * curr_poly->tverts[vertex].x;
+			curr_poly->tverts[vertex].y = beta + beta * curr_poly->tverts[vertex].y;
+		}
+	}
+}
+
+void Build_Perspective_To_Screen_Matrix4X4(Camera4D_PTR camera, Matrix4X4_PTR matrix)
+{
+	float alpha = 0.5*camera->viewplane_width - 0.5;
+	float beta = 0.5*camera->viewplane_height - 0.5;
+
+	Mat_Init_4X4(matrix, alpha, 0, 0, 0,
+		0, -beta, 0, 0,
+		alpha, beta, 1, 0,
+		0, 0, 0, 1);
+}
+
