@@ -13,6 +13,13 @@
 
 #define UVN_MODE_SPHERICAL	0
 
+#define CAM_PROJ_NORMALIZED			0x0001
+#define CAM_PROJ_SCREEN				0x0002
+#define CAM_PROJ_FOV90				0x0004
+
+#define CAM_MODEL_EULER				0x0008
+#define CAM_MODEL_UVN				0x0010
+
 
 typedef struct Camera4D_TYP
 {

@@ -184,3 +184,149 @@ void Plane3D_Init(Plane3D_PTR plane, Point3D_PTR p0, Vector3D_PTR normal, int no
 	}
 }
 
+//创建一个xyz的旋转矩阵
+void Build_XYZ_Rotation_Matrix4X4(float theta_x, float theta_y, float theta_z, Matrix4X4_PTR matrix)
+{
+	Matrix4X4 mx, my, mz, mtmp;
+	float sin_theta = 0, cos_theta = 0;
+	int rot_seq = 0;	//1-x, 2-y, 4-z
+
+	//重置为单位矩阵
+	Mat_Identity_4X4(matrix);
+
+	if (fabs(theta_x) > EPSILON_E5)
+		rot_seq = rot_seq | 1;
+
+	if (fabs(theta_y) > EPSILON_E5)
+		rot_seq = rot_seq | 2;
+
+	if (fabs(theta_z) > EPSILON_E5)
+		rot_seq = rot_seq | 4;
+
+	switch (rot_seq)
+	{
+	case 1: //x旋转
+		cos_theta = cos(theta_x);
+		sin_theta = sin(theta_x);
+
+		Mat_Init_4X4(&mx, 1, 0, 0, 0,
+			0, cos_theta, sin_theta, 0,
+			0, -sin_theta, cos_theta, 0,
+			0, 0, 0, 1);
+		Mat_Copy_4X4(&mx, matrix);
+		return;
+		break;
+	case 2:
+		cos_theta = cos(theta_y);
+		sin_theta = sin(theta_y);
+
+		Mat_Init_4X4(&my, cos_theta, 0, -sin_theta, 0,
+			0, 1, 0, 0,
+			sin_theta, 0, cos_theta, 0,
+			0, 0, 0, 1);
+
+		Mat_Copy_4X4(&my, matrix);
+		return;
+		break;
+	case 3: //xy旋转
+		cos_theta = cos(theta_x);
+		sin_theta = sin(theta_x);
+
+		Mat_Init_4X4(&mx, 1, 0, 0, 0,
+			0, cos_theta, sin_theta, 0,
+			0, -sin_theta, cos_theta, 0,
+			0, 0, 0, 1);
+
+		cos_theta = cos(theta_y);
+		sin_theta = sin(theta_y);
+
+		Mat_Init_4X4(&my, cos_theta, 0, -sin_theta, 0,
+			0, 1, 0, 0,
+			sin_theta, 0, cos_theta, 0,
+			0, 0, 0, 1);
+
+		Mat_Mul_4X4(&mx, &my, matrix);
+		break;
+	case 4: //z旋转
+		cos_theta = cos(theta_z);
+		sin_theta = sin(theta_z);
+
+		Mat_Init_4X4(&mz, cos_theta, sin_theta, 0, 0,
+			-sin_theta, cos_theta, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1);
+
+		Mat_Copy_4X4(&mz, matrix);
+		return;
+		break;
+	case 5: //xz旋转
+		cos_theta = cos(theta_x);
+		sin_theta = sin(theta_x);
+
+		Mat_Init_4X4(&mx, 1, 0, 0, 0,
+			0, cos_theta, sin_theta, 0,
+			0, -sin_theta, cos_theta, 0,
+			0, 0, 0, 1);
+
+		cos_theta = cos(theta_z);
+		sin_theta = sin(theta_z);
+
+		Mat_Init_4X4(&mz, cos_theta, sin_theta, 0, 0,
+			-sin_theta, cos_theta, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1);
+
+		Mat_Mul_4X4(&mx, &my, matrix);
+		break;
+	case 6: //yz旋转
+		cos_theta = cos(theta_y);
+		sin_theta = sin(theta_y);
+
+		Mat_Init_4X4(&my, cos_theta, 0, -sin_theta, 0,
+			0, 1, 0, 0,
+			sin_theta, 0, cos_theta, 0,
+			0, 0, 0, 1);
+
+		cos_theta = cos(theta_z);
+		sin_theta = sin(theta_z);
+
+		Mat_Init_4X4(&mz, cos_theta, sin_theta, 0, 0,
+			-sin_theta, cos_theta, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1);
+		Mat_Mul_4X4(&my, &mz, matrix);
+		break;
+	case 7: //xyz旋转
+
+		cos_theta = cos(theta_x);
+		sin_theta = sin(theta_x);
+
+		Mat_Init_4X4(&mx, 1, 0, 0, 0,
+			0, cos_theta, sin_theta, 0,
+			0, -sin_theta, cos_theta, 0,
+			0, 0, 0, 1);
+
+		cos_theta = cos(theta_y);
+		sin_theta = sin(theta_y);
+
+		Mat_Init_4X4(&my, cos_theta, 0, -sin_theta, 0,
+			0, 1, 0, 0,
+			sin_theta, 0, cos_theta, 0,
+			0, 0, 0, 1);
+
+		cos_theta = cos(theta_z);
+		sin_theta = sin(theta_z);
+
+		Mat_Init_4X4(&mz, cos_theta, sin_theta, 0, 0,
+			-sin_theta, cos_theta, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1);
+
+		Mat_Mul_4X4(&mx, &my, &mtmp);
+		Mat_Mul_4X4(&mtmp, &mz, matrix);
+		break;
+	default:
+		break;
+	}
+}
+

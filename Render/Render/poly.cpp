@@ -2,6 +2,7 @@
 #include "poly.h"
 #include "math.h"
 #include "camera.h"
+#include <memory.h>
 
 void Transform_RenderList4D(RenderList4D_PTR render_list, Matrix4X4_PTR matrix, int coord_selct)
 {
@@ -210,4 +211,35 @@ void Remove_Backfaces_Object4D(Object4D_PTR object, Camera4D_PTR camera)
 		if (dp <= 0.0)
 			SET_BIT(object->state, POLY4D_STATE_BACKFACE);
 	}
+}
+
+void Reset_RenderList4D(RenderList4D_PTR render_list)
+{
+	render_list->num_polys = 0;
+}
+
+//在渲染列表中插入多边形
+int Insert_Poly4D_RenderList4D(RenderList4D_PTR render_list, Poly4D_PTR poly)
+{
+	if (render_list->num_polys >= RENDERLIST4D_MAX_POLYS)
+		return 0;
+
+	//将指针指向多边形结构
+	render_list->poly_ptrs[render_list->num_polys] = &render_list->poly_data[render_list->num_polys];
+	memcpy((void*)&render_list->poly_data[render_list->num_polys], (void *)poly, sizeof(Poly4D));
+
+	if (render_list->num_polys == 0)
+	{
+		render_list->poly_data[0].next = NULL;
+		render_list->poly_data[0].prev = NULL;
+	}
+	else
+	{
+		render_list->poly_data[render_list->num_polys].next = NULL;
+		render_list->poly_data[render_list->num_polys-1].prev = &render_list->poly_data[render_list->num_polys];
+	}
+
+	render_list->num_polys++;
+
+	return 1;
 }

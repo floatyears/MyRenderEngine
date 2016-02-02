@@ -82,7 +82,7 @@ typedef struct Vertex4D_TYP
 	};
 }Vertex4D, *Vertex4D_PTR;
 
-//多边形定义
+//自包含数据的多边形定义
 typedef struct Poly4D_TYP
 {
 	int state;					//状态（激活、被剔除、
@@ -99,6 +99,7 @@ typedef struct Poly4D_TYP
 	Vertex4D normal;			//法线
 }Poly4D, *Poly4D_PTR;
 
+//引用外包数据的多边形定义，主要用于索引三角形
 typedef struct PolyF4D_TYP
 {
 	int state;
@@ -149,5 +150,15 @@ typedef struct Plane3D_TYP
 	Point3D p0;		//平面上的一个点
 	Vector3D n;		//平面的法线
 }Plane3D, *Plane3D_PTR;
+
+void Remove_Backfaces_Object4D(Object4D_PTR object, Camera4D_PTR camera);
+int Cull_Object4D(Object4D_PTR object, Camera4D_PTR camera, int cull_flags);
+void Remove_Backfaces_RenderList4D(RenderList4D_PTR render_list, Camera4D_PTR camera);
+void Build_Model_To_World_MATRIX4X4(Vector4D_PTR pos, Matrix4X4_PTR m);
+void Transform_Object4D(Object4D_PTR object, Matrix4X4_PTR matrix, int coord_select, int transform_basis);
+void Transform_RenderList4D(RenderList4D_PTR render_list, Matrix4X4_PTR matrix, int coord_selct);
+int Insert_Poly4D_RenderList4D(RenderList4D_PTR render_list, Poly4D_PTR poly);
+void Reset_RenderList4D(RenderList4D_PTR render_list);
+
 
 #endif

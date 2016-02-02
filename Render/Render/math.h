@@ -2,6 +2,7 @@
 #define H_MATH
 
 #include <math.h>
+#include <memory.h>
 
 #define DEG_TO_RAD(degree) 3.1415926/360*degree
 #define EPSILON_E3 (float)(1E-3) 
@@ -10,6 +11,7 @@
 #define EPSILON_E6 (float)(1E-6)
 
 #define SET_BIT(word,bit_flag)   ((word)=((word) | (bit_flag)))
+#define Mat_Copy_4X4(src_mat, dest_mat) {memcpy((void *)(dest_mat), (void *)(src_mat), sizeof(Matrix4X4) ); }
 
 typedef struct Matrix4X4_TYP
 {
@@ -53,5 +55,7 @@ float Vector3D_Length(Vector3D_PTR vector);
 void Mat_Identity_4X4(Matrix4X4_PTR matrix);
 void Vector3D_Normalize(Vector3D_PTR vector, Vector3D_PTR normal);
 void Plane3D_Init(Plane3D_PTR plane, Point3D_PTR p0, Vector3D_PTR normal, int normalize = 0);
+
+void Build_XYZ_Rotation_Matrix4X4(float theta_x, float theta_y, float theta_z, Matrix4X4_PTR matrix);
 
 #endif
