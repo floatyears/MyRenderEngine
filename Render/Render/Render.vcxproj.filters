@@ -16,18 +16,33 @@
     <Filter Include="源文件\example">
       <UniqueIdentifier>{ee8d6aeb-1b5f-4f2f-b44c-1a4db2aa81ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\resource">
+      <UniqueIdentifier>{17d9f679-69ca-46d8-a72f-1f285a0e5413}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="poly.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="math.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="draw_windows.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="draw.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="math3d.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="globaldef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,17 +50,31 @@
     <ClCompile Include="poly.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="math.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="camera.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="draw.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="sample1cpp.cpp">
       <Filter>源文件\example</Filter>
     </ClCompile>
+    <ClCompile Include="draw_windows.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="draw.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="math3d.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="light.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="resource.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\cloud03.bmp">
+      <Filter>源文件\resource</Filter>
+    </Image>
   </ItemGroup>
 </Project>

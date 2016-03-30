@@ -1,6 +1,8 @@
-#include "camera.h"
 #include <stddef.h>
 #include <math.h>
+#include "math3d.h"
+#include "camera.h"
+#include "poly.h"
 
 void Init_Camera4D(Camera4D_PTR camera,
 	int cam_attr,
@@ -10,32 +12,32 @@ void Init_Camera4D(Camera4D_PTR camera,
 	float near_clip_z,
 	float far_clip_z,
 	float fov,
-	int viewport_width,
-	int viewport_height)
+	float viewport_width,
+	float viewport_height)
 {
 	camera->attr = cam_attr;
-	Vector4D_Copy(camera->pos, cam_pos);
-	Vector4D_Copy(camera->dir, cam_dir);
+	Vector4D_Copy(&camera->pos, cam_pos);
+	Vector4D_Copy(&camera->dir, cam_dir);
 
 	//对于uvn相机
-	Vector4D_InitXYZ(camera->u, 1, 0, 0);
-	Vector4D_InitXYZ(camera->v, 0, 1, 0);
-	Vector4D_InitXYZ(camera->n, 0, 0, 1);
+	Vector4D_InitXYZ(&camera->u, 1, 0, 0);
+	Vector4D_InitXYZ(&camera->v, 0, 1, 0);
+	Vector4D_InitXYZ(&camera->n, 0, 0, 1);
 
 	if (cam_target != NULL) //uvn目标位置
-		Vector4D_Copy(camera->target, cam_target);
+		Vector4D_Copy(&camera->target, cam_target);
 	else
-		Vector4D_Zero(camera->target);
+		Vector4D_Zero(&camera->target);
 	
 	camera->near_clip_z = near_clip_z;
 	camera->far_clip_z = far_clip_z;
 
-	camera->viewplane_width = viewport_width;
-	camera->viewplane_height = viewport_height;
-	camera->viewport_center_x = (viewport_width - 1) / 2;
-	camera->viewport_center_y = (viewport_height - 1) / 2;
+	camera->viewport_width = viewport_width;
+	camera->viewport_height = viewport_height;
+	camera->viewport_center_x = (viewport_width - 1) *0.5f;
+	camera->viewport_center_y = (viewport_height - 1) *0.5f;
 
-	camera->aspect_ratio = (float)viewport_width / (float)viewport_height;
+	camera->aspect_ratio = viewport_width / viewport_height;
 
 	//将所有变换矩阵设置为单位矩阵
 	Mat_Identity_4X4(&camera->mcam);
@@ -45,12 +47,13 @@ void Init_Camera4D(Camera4D_PTR camera,
 	camera->fov = fov;
 
 	//视平面设置为2x(2/ar)
-	camera->viewplane_width = 2.0;
-	camera->viewplane_height = 2.0 / camera->aspect_ratio;
+	camera->viewplane_width = 2.0f;
+	camera->viewplane_height = 2.0f / camera->aspect_ratio;
 
 	float tan_fov_div2 = tan(DEG_TO_RAD(fov / 2));
 
-	camera->view_dist_h = 0.5 * camera->viewplane_width * tan_fov_div2;
+	camera->view_dist_v = camera->view_dist_h = 0.5f * camera->viewplane_width * tan_fov_div2;
+	 //= 0.5f * camera->viewplane_width * tan_fov_div2;
 
 	if (fov == 90.0)
 	{
@@ -60,19 +63,19 @@ void Init_Camera4D(Camera4D_PTR camera,
 		Vector3D vn; //面法线
 
 		//左裁剪面
-		Vector4D_InitXYZ(&vn, 1, 0, -1); //平面x=z
+		Vector3D_InitXYZ(&vn, 1, 0, -1); //平面x=z
 		Plane3D_Init(&camera->rt_clip_plane, &pt_origin, &vn, 1);
 
 		//右裁剪面
-		Vector4D_InitXYZ(&vn, -1, 0, -1);
+		Vector3D_InitXYZ(&vn, -1, 0, -1);
 		Plane3D_Init(&camera->lt_clip_plane, &pt_origin, &vn, 1);
 
 		//上裁剪面
-		Vector4D_InitXYZ(&vn, 0, 1, -1);
+		Vector3D_InitXYZ(&vn, 0, 1, -1);
 		Plane3D_Init(&camera->lt_clip_plane, &pt_origin, &vn, 1);
 
 		//下裁剪面
-		Vector4D_InitXYZ(&vn, 0, -1, -1);
+		Vector3D_InitXYZ(&vn, 0, -1, -1);
 		Plane3D_Init(&camera->lt_clip_plane, &pt_origin, &vn, 1);
 	}
 	else
@@ -83,16 +86,16 @@ void Init_Camera4D(Camera4D_PTR camera,
 
 		Vector3D vn;
 
-		Vector3D_InitXYZ(&vn, camera->view_dist_h, 0, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, camera->view_dist_h, 0, -camera->viewplane_width / 2.0f);
 		Plane3D_Init(&camera->rt_clip_plane, &pt_origin, &vn, 1);
 
-		Vector3D_InitXYZ(&vn, -camera->view_dist_h, 0, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, -camera->view_dist_h, 0, -camera->viewplane_width / 2.0f);
 		Plane3D_Init(&camera->lt_clip_plane, &pt_origin, &vn, 1);
 
-		Vector3D_InitXYZ(&vn, 0, camera->view_dist_h, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, 0, camera->view_dist_h, -camera->viewplane_width / 2.0f);
 		Plane3D_Init(&camera->tp_clip_plane, &pt_origin, &vn, 1);
 
-		Vector3D_InitXYZ(&vn, 0, -camera->view_dist_h, -camera->viewplane_width / 2.0);
+		Vector3D_InitXYZ(&vn, 0, -camera->view_dist_h, -camera->viewplane_width / 2.0f);
 		Plane3D_Init(&camera->bt_clip_plane, &pt_origin, &vn, 1);
 	}
 }
@@ -106,6 +109,7 @@ void Build_Camera4D_Matrix_Euler(Camera4D_PTR camera, int camera_rotation_seq)
 		mrot,				//所有逆旋转矩阵的积
 		mtmp;				//用于存储临时矩阵
 
+	//创建相机的逆变换矩阵
 	Mat_Init_4X4(&mt_inv, 1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
@@ -129,8 +133,8 @@ void Build_Camera4D_Matrix_Euler(Camera4D_PTR camera, int camera_rotation_seq)
 	sin_theta = -sin(theta_y);
 
 	//建立矩阵
-	Mat_Init_4X4(&my_inv, cos_theta, -sin_theta, 0, 0,
-		0, -1, 0, 0,
+	Mat_Init_4X4(&my_inv, cos_theta,0, -sin_theta, 0,
+		0, 1, 0, 0,
 		sin_theta, 0, cos_theta, 0,
 		0, 0, 0, 1);
 
@@ -138,7 +142,7 @@ void Build_Camera4D_Matrix_Euler(Camera4D_PTR camera, int camera_rotation_seq)
 	sin_theta = -sin(theta_z);
 
 	//建立矩阵
-	Mat_Init_4X4(&my_inv, cos_theta, sin_theta, 0, 0,
+	Mat_Init_4X4(&mz_inv, cos_theta, sin_theta, 0, 0,
 		-sin_theta, cos_theta, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1);
@@ -248,7 +252,7 @@ void Convert_From_Homogeneous4D_Object4D(Object4D_PTR object)
 {
 	for (int vertex = 0; vertex < object->num_vertices; vertex++)
 	{
-		Vector4D_Div_By_W(&object->vlist_trans[vertex]);
+		Vector4D_Div_By_W(&object->vlist_trans[vertex].v);
 	}
 }
 
@@ -264,6 +268,9 @@ void Camera_To_Perspective_RenderList4D(RenderList4D_PTR render_list, Camera4D_P
 			float z = curr_poly->tverts[vertex].z;
 			curr_poly->tverts[vertex].x = camera->view_dist_h * curr_poly->tverts[vertex].x / z;
 			curr_poly->tverts[vertex].y = camera->view_dist_v * curr_poly->tverts[vertex].y * camera->aspect_ratio / z;
+
+			//为了在后面使用1/z缓存，这里预先处理坐标
+			curr_poly->tverts[vertex].z = 1 / curr_poly->tverts[vertex].z;
 		}
 	}
 }
@@ -277,7 +284,7 @@ void Convert_From_Homogeneous4D_RenderList4D(RenderList4D_PTR render_list)
 			continue;
 		for (int vertex = 0; vertex < 3; vertex++)
 		{
-			Vector4D_Div_By_W(&curr_poly->tverts[vertex]);
+			Vector4D_Div_By_W(&curr_poly->tverts[vertex].v);
 		}
 	}
 }
@@ -293,8 +300,8 @@ void Build_Camera_To_Perspective_Matrix4X4(Camera4D_PTR camera, Matrix4X4_PTR ma
 
 void Perspective_To_Screen_Object4D(Object4D_PTR object, Camera4D_PTR camera)
 {
-	float alpha = 0.5*camera->viewplane_width - 0.5;
-	float beta = 0.5*camera->viewplane_height - 0.5;
+	float alpha = 0.5f*camera->viewplane_width - 0.5f;
+	float beta = 0.5f*camera->viewplane_height - 0.5f;
 
 	for (int vertex = 0; vertex < object->num_vertices; vertex++)
 	{
@@ -305,8 +312,8 @@ void Perspective_To_Screen_Object4D(Object4D_PTR object, Camera4D_PTR camera)
 
 void Perspective_To_Screen_RenderList4D(RenderList4D_PTR render_list, Camera4D_PTR camera)
 {
-	float alpha = 0.5*camera->viewplane_width - 0.5;
-	float beta = 0.5*camera->viewplane_height - 0.5;
+	float alpha = 0.5f*camera->viewport_width - 0.5f;
+	float beta = 0.5f*camera->viewport_height - 0.5f;
 
 	for (int poly = 0; poly < render_list->num_polys; poly++)
 	{
@@ -323,8 +330,8 @@ void Perspective_To_Screen_RenderList4D(RenderList4D_PTR render_list, Camera4D_P
 
 void Build_Perspective_To_Screen_Matrix4X4(Camera4D_PTR camera, Matrix4X4_PTR matrix)
 {
-	float alpha = 0.5*camera->viewplane_width - 0.5;
-	float beta = 0.5*camera->viewplane_height - 0.5;
+	float alpha = 0.5f*camera->viewplane_width - 0.5f;
+	float beta = 0.5f*camera->viewplane_height - 0.5f;
 
 	Mat_Init_4X4(matrix, alpha, 0, 0, 0,
 		0, -beta, 0, 0,

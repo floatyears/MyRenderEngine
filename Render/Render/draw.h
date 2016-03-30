@@ -1,86 +1,33 @@
 #ifndef H_DRAW
 #define H_DRAW
 
-#include <memory.h>
-#include <ddraw.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <wingdi.h>
+#include <Windows.h>
+#include "poly.h"
+#include "math3d.h"
+#include "light.h"
 
-#define DD_PIXEL_FORMAT8        8
-#define DD_PIXEL_FORMAT555      15
-#define DD_PIXEL_FORMAT565      16
-#define DD_PIXEL_FORMAT888      24
-#define DD_PIXEL_FORMATALPHA888 32 
+#define TRI_TYPE_NONE			0
+#define TRI_TYPE_FLAT_TOP		1
+#define TRI_TYPE_FLAT_BOTTOM	2
+#define TRI_TYPE_FLAT_MASK		3
+#define TRI_TYPE_GENERAL		4
+#define INTERP_LHS				0
+#define INTERP_RHS				1
 
-#define DDRAW_INIT_STRUCT(ddstruct) { memset(&ddstruct,0,sizeof(ddstruct)); ddstruct.dwSize=sizeof(ddstruct); }
+#define FIXP16_SHIFT			16
+#define FIXP16_ROUND_UP			0x00008000
 
-#define SCREEN_WIDTH		640
-#define SCREEN_HEIGHT		480
-#define SCREEN_BPP			8
-#define MAX_COLORS_PALETTE  256
+#define SWAP(x1,x2,tmp) {tmp = x1; x1 = x2; x2 = tmp;}
 
-HWND main_window_handle = NULL;
-HINSTANCE main_instance = NULL;
+int Draw_Line(int x0, int y0, int x1, int y1, int color, UCHAR *vb_start, int lpitch);
+int Draw_Pixel(int x, int y, int color, UCHAR *video_buffer, int lpitch);
+int Draw_Clip_Line(int x0, int y0, int x1, int y1, int color, UCHAR *dest_buffer, int lpitch);
+void Draw_RenderList4D_Wire(RenderList4D_PTR render_list, UCHAR *video_buffer, int lpitch);
+void Draw_RenderList4D_Solid(RenderList4D_PTR render_list, UCHAR *video_buffer, int lpitch, UCHAR *zbuffer, int zpitch);
+void Draw_Gouraud_Triangle(Poly4D_PTR poly, UCHAR *_dest_buffer, int mempitch);
+void Draw_Gouraud_Triangle_Float(Poly4D_PTR poly, UCHAR *_dest_buffer, int mempitch);
+void Draw_Textured_Triangle(Poly4D_PTR poly, UCHAR *_dest_buffer, int mempitch, UCHAR *zbuffer, int zpitch);
 
-LPDIRECTDRAWSURFACE7 lpddsprimary = NULL;
-LPDIRECTDRAWSURFACE7 lpddsback = NULL;
-LPDIRECTDRAWPALETTE  lpddpal = NULL;
-LPDIRECTDRAWCLIPPER  lpddclipper = NULL;
-LPDIRECTDRAWCLIPPER  lpddcliperwin = NULL;
-
-DDSCAPS2			 ddscaps;
-HRESULT				 ddrval;
-
-PALETTEENTRY		 palette[MAX_COLORS_PALETTE];
-PALETTEENTRY		 save_palette[MAX_COLORS_PALETTE];
-
-DDSURFACEDESC2 ddsd;
-LPDIRECTDRAW7 lpdd = NULL;
-UCHAR *primary_buffer = NULL;
-UCHAR *back_buffer = NULL;
-
-int dd_pixel_format = DD_PIXEL_FORMAT565;
-int primary_lpitch = 0;
-int back_lpitch = 0;
-
-
-int min_clip_x = 0,
-	max_clip_x = SCREEN_WIDTH - 1,
-	min_clip_y = 0,
-	max_clip_y = SCREEN_HEIGHT - 1;
-
-int screen_width = SCREEN_WIDTH,
-	screen_height = SCREEN_HEIGHT,
-	screen_bpp = SCREEN_BPP,
-	screen_windowed = 0;
-
-int window_client_x0 = 0;
-int window_client_y0 = 0;
-
-//RGB16µÄº¯ÊýÖ¸Õë
-USHORT(*RGB16Bit)(int r, int g, int b) = NULL;
-
-#define _RGB16BIT555(r,g,b) ((b & 31) + (g & 31) << 5 + (r & 31) << 10)
-#define _RGB16BIT565(r,g,b) ((b & 31) + (g & 63) << 5 + (r & 31) << 11)
-#define _RGB24BIT(r,g,b)	(b + g << 8 + r << 16)
-#define _RGB32BIT(a,r,g,b)	(b + g << 8 + r << 16 + a << 24)
-
-USHORT RGB16Bit565(int r, int g, int b);
-USHORT RGB16Bit555(int r, int g, int b);
-UCHAR *DDraw_Lock_Surface(LPDIRECTDRAWSURFACE7 lpdds, int *lpitch);
-int DDraw_Unlock_Surface(LPDIRECTDRAWSURFACE7 lpdds);
-UCHAR *DDraw_Lock_Primary_Surface(void);
-int DDraw_Unlock_Primary_Surface(void);
-UCHAR *DDraw_Lock_Back_Surface(void);
-int DDraw_Unlock_Back_Surface(void);
-LPDIRECTDRAWSURFACE7 DDraw_Create_Surface(int width, int height, int mem_flags = 0, USHORT color_key_value = NULL);
-int DDraw_Fill_Surface(LPDIRECTDRAWSURFACE7 lpdds, USHORT color, RECT *client = 0);
-int DDraw_Flip(void);
-int DDraw_Wait_For_Vsync(void);
-LPDIRECTDRAWCLIPPER DDraw_Attach_Clipper(LPDIRECTDRAWSURFACE7 lpdds, int num_rects, LPRECT clip_list);
-int DDraw_Init(int width, int height, int bpp, int windowed);
-int DDraw_Shutdown(void);
-int Load_Palette_From_File(char *filename, LPPALETTEENTRY palette);
+void Draw_Triangle_2D(int x1, int y1, int x2, int y2, int x3, int y3, int color, UCHAR * dest_buffer, int mempitch);
 
 #endif

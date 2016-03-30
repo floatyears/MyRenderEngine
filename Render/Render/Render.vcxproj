@@ -18,7 +18,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -38,7 +38,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LibraryPath>E:\Program\MyRenderEngine\Render\Render\Lib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -47,6 +50,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ddraw.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -66,15 +70,25 @@
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="draw.h" />
-    <ClInclude Include="math.h" />
+    <ClInclude Include="draw_windows.h" />
+    <ClInclude Include="globaldef.h" />
+    <ClInclude Include="light.h" />
+    <ClInclude Include="math3d.h" />
     <ClInclude Include="poly.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="draw.cpp" />
-    <ClCompile Include="math.cpp" />
+    <ClCompile Include="draw_windows.cpp" />
+    <ClCompile Include="light.cpp" />
+    <ClCompile Include="math3d.cpp" />
     <ClCompile Include="poly.cpp" />
+    <ClCompile Include="resource.cpp" />
     <ClCompile Include="sample1cpp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\cloud03.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
