@@ -1,7 +1,10 @@
 #ifndef H_POLY
 #define H_POLY
 
-#include <Windows.h>
+//#include <Windows.h>
+#include <stdio.h>
+#include <string>
+#include <QtDebug>
 
 //坐标变换
 #define TRANSFORM_LOCAL_ONLY			1
@@ -39,10 +42,23 @@
 #define ZBUFFER_ATTR_16BIT				1
 #define ZBUFFER_ATTR_32BIT				2
 
-#define RENDERLIST4D_MAX_POLYS	256
+#define RENDERLIST4D_MAX_POLYS	25600
 
 #define OBJECT4D_MAX_VERTICES	128
 #define OBJECT4D_MAX_POLYS		64
+
+#define UCHAR unsigned char
+#define UINT unsigned int
+#define DWORD unsigned int
+#define WORD unsigned short
+#define LONG int
+#define USHORT unsigned short
+#define INT int
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+#define AMBIENT_LIGHT_INDEX 0
+#define INFINITE_LIGHT_INDEX 1
 
 typedef struct Matrix4X4_TYP
 {
@@ -135,7 +151,7 @@ typedef struct Bitmap_Image_TYP
 	int width, height;  //位图的长宽
 	int num_bytes;		//位图的总位长
 	int bpp;			//每像素的位长
-	UCHAR *buffer;		//位图的像素
+    unsigned char *buffer;		//位图的像素
 }Bitmap_Image, *Bitmap_Iamge_PTR;
 
 //自包含数据的多边形定义
@@ -260,7 +276,7 @@ typedef struct Camera4D_TYP
 typedef struct ZBUFFER_TYP
 {
 	int attr;
-	UCHAR *zbuffer;
+    unsigned char *zbuffer;
 	int width;
 	int height;
 	int sizeq;			//大小，单位为四元组
@@ -282,6 +298,6 @@ void Clip_Poly_RenderList4D(RenderList4D_PTR renderlist, Camera4D_PTR cam, int c
 
 int Create_ZBuffer(ZBUFFER_PTR zb, int width, int height, int attr);
 int Delete_ZBuffer(ZBUFFER_PTR zb);
-void Clear_ZBuffer(ZBUFFER_PTR zb, UINT data);
+void Clear_ZBuffer(ZBUFFER_PTR zb, unsigned int data);
 
 #endif

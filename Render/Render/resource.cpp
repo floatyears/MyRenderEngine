@@ -1,21 +1,197 @@
+#include <QFile>
+
 #include "resource.h"
+
+int Load_Bitmap_File_Qt(Bitmap_File_PTR bitmap, char *filename)
+{
+    QFile file(filename);
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        perror("File opening failed");
+        return EXIT_FAILURE;
+    }
+
+//    file.read((char *)&bitmap->bitmapfileheader,static_cast<qint64>(sizeof(BITMAPFILEHEADER)));
+    file.read((char *)&bitmap->bitmapfileheader.bfType, sizeof(WORD));
+    file.read((char *)&bitmap->bitmapfileheader.bfSize, sizeof(DWORD));
+    file.read((char *)&bitmap->bitmapfileheader.bfReserved1, sizeof(WORD));
+    file.read((char *)&bitmap->bitmapfileheader.bfReserved2, sizeof(WORD));
+    file.read((char *)&bitmap->bitmapfileheader.bfOffBits, sizeof(DWORD));
+
+    if(bitmap->bitmapfileheader.bfType != BITMAP_ID)
+    {
+        file.close();
+        return 0;
+    }
+
+    qDebug()<< "pos:" << file.pos();
+
+//    file.read((char*)&bitmap->bitmapinfoheader,static_cast<qint64>(sizeof(BITMAPINFOHEADER)));
+    file.read((char *)&bitmap->bitmapinfoheader.biSize, sizeof(DWORD));
+    file.read((char *)&bitmap->bitmapinfoheader.biWidth, sizeof(LONG));
+    file.read((char *)&bitmap->bitmapinfoheader.biHeight, sizeof(LONG));
+    file.read((char *)&bitmap->bitmapinfoheader.biPlanes, sizeof(WORD));
+    file.read((char *)&bitmap->bitmapinfoheader.biBitCount, sizeof(WORD));
+    file.read((char *)&bitmap->bitmapinfoheader.biCompression, sizeof(DWORD));
+    file.read((char *)&bitmap->bitmapinfoheader.biSizeImage, sizeof(DWORD));
+    file.read((char *)&bitmap->bitmapinfoheader.biXPelsPerMeter, sizeof(LONG));
+    file.read((char *)&bitmap->bitmapinfoheader.biYPelsPerMeter, sizeof(LONG));
+    file.read((char *)&bitmap->bitmapinfoheader.biClrUsed, sizeof(DWORD));
+    file.read((char *)&bitmap->bitmapinfoheader.biClrImportant, sizeof(DWORD));
+
+    UCHAR *tmp_buffer = NULL;
+    int index;
+    if (bitmap->bitmapinfoheader.biBitCount == 24) //24位的位图
+        {
+            if (!(tmp_buffer = (UCHAR *)malloc(bitmap->bitmapinfoheader.biSizeImage)))
+            {
+                //_lclose(file_handle);
+                //fread(bitmap->buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
+                file.close();
+
+                return 0;
+            }
+
+            //分配成32位的颜色
+            if (!(bitmap->buffer = (UCHAR *)malloc(4 * bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight * sizeof(UCHAR))))
+            {
+                //_lclose(file_handle);
+                //fread(bitmap->buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
+                file.close();
+                free(tmp_buffer);
+                return 0;
+            }
+
+            //int i = bitmap->bitmapinfoheader.biSizeImage;
+            ////UCHAR color;
+            //char color;
+            //while (i >= 0)
+            //{
+            //	/*fseek(file_handle, -(int)(bitmap->bitmapinfoheader.biSizeImage + i), SEEK_END);
+
+            //	fread(&color, 1, 1, file_handle);*/
+
+            //	fin.read(&color, sizeof(char));
+            //
+            //	if (i == 10000)
+            //	{
+            //		i = i;
+            //	}
+            //	i--;
+            //}
+
+            //fin.seekg(sizeof(bitmap->bitmapfileheader) + sizeof(bitmap->bitmapinfoheader), fin.beg);
+            //_lread(file_handle, tmp_buffer, bitmap->bitmapinfoheader.biSizeImage);
+
+//            fread(tmp_buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
+            file.read((char*)tmp_buffer,bitmap->bitmapinfoheader.biSizeImage);
+            //char *color = new char[3];
+            for ( index = 0; index < bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight; index++)
+            {
+                /*if (index == 10000)
+                {
+                    index = index;
+                }*/
+
+                //bitmap的格式顺序是b,g,r
+                ((UINT *)bitmap->buffer)[index] = RGBA32BIT(tmp_buffer[index * 3 + 2], tmp_buffer[index * 3 + 1], tmp_buffer[index * 3 + 0], 255);
+
+                //fin.read(color, sizeof(char) * 3);
+                //((UINT *)bitmap->buffer)[index] = RGBA32BIT(color[0], color[1], color[2], 255);
+            }
+
+            bitmap->bitmapinfoheader.biBitCount = 32;
+
+            free(tmp_buffer);
+        }
+        else if (bitmap->bitmapinfoheader.biBitCount == 32)
+        {
+            if (!(tmp_buffer = (UCHAR *)malloc(bitmap->bitmapinfoheader.biSizeImage)))
+            {
+                //_lclose(file_handle);
+                //fread(bitmap->buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
+//                fclose(file_handle);
+                file.close();
+                return 0;
+            }
+
+            //分配成32位的颜色
+            if (!(bitmap->buffer = (UCHAR *)malloc(4 * bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight)))
+            {
+                //_lclose(file_handle);
+                //fread(bitmap->buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
+//                fclose(file_handle);
+                file.close();
+                free(tmp_buffer);
+                return 0;
+            }
+
+            //int i = bitmap->bitmapinfoheader.biSizeImage;
+            //UCHAR color;
+            //while (i >= 0)
+            //{
+            //	fseek(file_handle, -(int)(bitmap->bitmapinfoheader.biSizeImage + i), SEEK_END);
+
+            //	fread(&color, 1, 1, file_handle);
+            //	i--;
+            //}
+
+            //_lread(file_handle, tmp_buffer, bitmap->bitmapinfoheader.biSizeImage);
+
+            //fread(tmp_buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
+//            fread(tmp_buffer, bitmap->bitmapinfoheader.biHeight * bitmap->bitmapinfoheader.biWidth * 4, 1, file_handle);
+            file.read((char*)tmp_buffer,bitmap->bitmapinfoheader.biHeight * bitmap->bitmapinfoheader.biWidth * 4);
+            for (index = 0; index < bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight; index++)
+            {
+                ((UINT *)bitmap->buffer)[index] = RGBA32BIT(tmp_buffer[index * 4 + 1], tmp_buffer[index * 4 + 2], tmp_buffer[index * 4 + 3], tmp_buffer[index * 4 + 0]);
+            }
+
+            bitmap->bitmapinfoheader.biBitCount = 32;
+
+            free(tmp_buffer);
+        }
+        else
+        {
+            return 0;
+        }
+
+}
 
 int Load_Bitmap_File(Bitmap_File_PTR bitmap, char *filename)
 {
-	FILE *file_handle;
+
+//    QFile file(filename);
+//    if(!file.open(QIODevice::ReadOnly))
+//    {
+//        perror("QFile opening failed");
+//        return EXIT_FAILURE;
+//    }
+
+//    int handle = file.handle();
+    FILE *file_handle = fopen(filename,"rb");
+
 	int	index;
 
 	UCHAR *tmp_buffer = NULL;
-	OFSTRUCT file_data;			//文件数据信息
+    //OFSTRUCT file_data;			//文件数据信息
 	int error;
 
-	std::ifstream fin(filename, std::ios::binary);
+    std::ifstream fin(filename, std::ios::binary);
 	//打开文件
-	if ((error = fopen_s(&file_handle, filename, "rb")) != 0)// &file_data, OF_READ)) == -1)
-		return 0;
+
+//	if ((error = fopen_s(&file_handle, filename, "rb")) != 0)// &file_data, OF_READ)) == -1)
+//		return 0;
+    if(!file_handle) {
+            perror("File opening failed");
+            return EXIT_FAILURE;
+        }
 	
 	//_lread(file_handle, &bitmap->bitmapfileheader, sizeof(BITMAPFILEHEADER));
-	fread(&bitmap->bitmapfileheader, sizeof(BITMAPFILEHEADER), 1, file_handle);
+    fread(&bitmap->bitmapfileheader.bfType, sizeof(WORD), 1, file_handle);
+    fread(&bitmap->bitmapfileheader.bfSize, sizeof(DWORD), 1, file_handle);
+    fread(&bitmap->bitmapfileheader.bfReserved1, sizeof(WORD), 1, file_handle);
+    fread(&bitmap->bitmapfileheader.bfReserved2, sizeof(WORD), 1, file_handle);
+    fread(&bitmap->bitmapfileheader.bfOffBits, sizeof(DWORD), 1, file_handle);
 
 	//检测是否是bitmap
 	if (bitmap->bitmapfileheader.bfType != BITMAP_ID)
@@ -26,20 +202,30 @@ int Load_Bitmap_File(Bitmap_File_PTR bitmap, char *filename)
 	}
 	
 	//_lread(file_handle, &bitmap->bitmapinfoheader, sizeof(BITMAPINFOHEADER));
-	fread(&bitmap->bitmapinfoheader, sizeof(BITMAPINFOHEADER), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biSize, sizeof(DWORD), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biWidth, sizeof(LONG), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biHeight, sizeof(LONG), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biPlanes, sizeof(WORD), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biBitCount, sizeof(WORD), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biCompression, sizeof(DWORD), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biSizeImage, sizeof(DWORD), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biXPelsPerMeter, sizeof(LONG), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biYPelsPerMeter, sizeof(LONG), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biClrUsed, sizeof(DWORD), 1, file_handle);
+    fread(&bitmap->bitmapinfoheader.biClrImportant, sizeof(DWORD), 1, file_handle);
 
 	//如果有调色板的话，那么就加载
 	if (bitmap->bitmapinfoheader.biBitCount == 8)
 	{
 		//_lread(file_handle, &bitmap->palette, MAX_COLORS_PALETTE*sizeof(PALETTEENTRY));
-		fread(&bitmap->palette, MAX_COLORS_PALETTE * sizeof(PALETTEENTRY), 1, file_handle);
+        //fread(&bitmap->palette, MAX_COLORS_PALETTE * sizeof(PALETTEENTRY), 1, file_handle);
 		for ( index = 0; index < MAX_COLORS_PALETTE; index++)
 		{
-			int tmp_color = bitmap->palette[index].peRed;
-			bitmap->palette[index].peRed = bitmap->palette[index].peBlue;
-			bitmap->palette[index].peBlue = tmp_color;
+//			int tmp_color = bitmap->palette[index].peRed;
+//			bitmap->palette[index].peRed = bitmap->palette[index].peBlue;
+//			bitmap->palette[index].peBlue = tmp_color;
 
-			bitmap->palette[index].peFlags = PC_NOCOLLAPSE;
+//			bitmap->palette[index].peFlags = PC_NOCOLLAPSE;
 		}
 	}
 
@@ -74,10 +260,10 @@ int Load_Bitmap_File(Bitmap_File_PTR bitmap, char *filename)
 		}
 
 		//分配成32位的颜色
-		if (!(bitmap->buffer = (UCHAR *)malloc(4 * bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight)))
+        if (!(bitmap->buffer = (UCHAR *)malloc(4 * bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight * sizeof(UCHAR))))
 		{
 			//_lclose(file_handle);
-			//fread(bitmap->buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
+            //fread(bitmap->buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
 			fclose(file_handle);
 			free(tmp_buffer);
 			return 0;
@@ -106,7 +292,7 @@ int Load_Bitmap_File(Bitmap_File_PTR bitmap, char *filename)
 		
 		fread(tmp_buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
 		//char *color = new char[3];
-		for ( index = 0; index < bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight; index++)
+        for ( index = 0; index < bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight; index++)
 		{
 			/*if (index == 10000)
 			{
@@ -158,7 +344,7 @@ int Load_Bitmap_File(Bitmap_File_PTR bitmap, char *filename)
 		//_lread(file_handle, tmp_buffer, bitmap->bitmapinfoheader.biSizeImage);
 
 		//fread(tmp_buffer, bitmap->bitmapinfoheader.biSizeImage, 1, file_handle);
-		fread(tmp_buffer, bitmap->bitmapinfoheader.biHeight * bitmap->bitmapinfoheader.biWidth * 4, 1, file_handle);
+        fread(tmp_buffer, bitmap->bitmapinfoheader.biHeight * bitmap->bitmapinfoheader.biWidth, 1, file_handle);
 		
 		for (index = 0; index < bitmap->bitmapinfoheader.biWidth * bitmap->bitmapinfoheader.biHeight; index++)
 		{

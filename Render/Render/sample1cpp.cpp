@@ -2,11 +2,11 @@
 #include "math3d.h"
 #include "draw.h"
 #include "camera.h"
-#include "draw_windows.h"
+#include "draw_qt.h"
 #include "light.h"
 #include "resource.h"
-#include <windowsx.h>
-#include <Windows.h>
+//#include <windowsx.h>
+//#include <Windows.h>
 
 #define WINDOW_CLASS_NAME	"WIN3DCLASS"
 #define WINDOW_TITLE		"Sample 1"
@@ -40,7 +40,7 @@ ZBUFFER zbuffer;
 
 int Game_Init(void *params = NULL)
 {
-	DDraw_Init(WINDOW_WIDTH,WINDOW_HEIGHT,WINDOW_BPP,WINDOW_APP);
+    DDraw_Init(WINDOW_WIDTH,WINDOW_HEIGHT);
 
 	poly.state = POLY4D_STATE_ACTIVE;
 	//poly.attr = POLY4D_ATTR_SHADE_MODE_CONSTANT;
@@ -142,7 +142,7 @@ int Game_Main(void *params = NULL)
 	Start_Clock();
 
 	//清理绘制的面
-	DDraw_Fill_Surface(lpddsback, 0);
+    //DDraw_Fill_Surface(lpddsback, 0);
 
 	// read keyboard and other devices here
 	//DInput_Read_Keyboard();
@@ -210,9 +210,9 @@ int Game_Main(void *params = NULL)
 	//}
 	
 
-	DDraw_Unlock_Back_Surface();
+    //DDraw_Unlock_Back_Surface();
 
-	DDraw_Flip();
+    //DDraw_Flip();
 
 	Wait_Clock(30);
 
@@ -221,103 +221,7 @@ int Game_Main(void *params = NULL)
 
 void Game_ShutDown(void *params = NULL)
 {
-	DDraw_Shutdown();
+    //DDraw_Shutdown();
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT32 msg, WPARAM wparam, LPARAM lparam)
-{
-	PAINTSTRUCT ps;
-	HDC hdc;
-
-	switch (msg)
-	{
-	case WM_CREATE:
-		return 0;
-		break;
-	case WM_PAINT:
-		//开始绘制
-		hdc = BeginPaint(hwnd, &ps);
-
-		//结束绘制
-		EndPaint(hwnd, &ps);
-		return 0;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	default:
-		break;
-	}
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
-
-int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline, int ncmdshow)
-{
-	WNDCLASS winclass;
-	HWND hwnd;
-	MSG msg;
-	//HDC hdc;
-	//PAINTSTRUCT ps;
-
-	winclass.style = CS_DBLCLKS | CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
-	winclass.lpfnWndProc = WindowProc;
-	winclass.cbClsExtra = 0;
-	winclass.cbWndExtra = 0;
-	winclass.hInstance = hinstance;
-	winclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	winclass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	winclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	winclass.lpszMenuName = NULL;
-	winclass.lpszClassName = WINDOW_CLASS_NAME;
-
-	//注册window类
-	if (!RegisterClass(&winclass))
-		return 0;
-
-	//创建窗口句柄
-	if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, WINDOW_TITLE, (WINDOW_APP ? (WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION) : (WS_POPUP | WS_VISIBLE)),
-		0, 0,
-		WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL, hinstance, NULL)))
-		return 0;
-
-	main_window_handle = hwnd;
-	main_instance = hinstance;
-
-	if (WINDOW_APP)
-	{
-		RECT window_rect = { 0, 0, WINDOW_WIDTH - 1, WINDOW_HEIGHT - 1 };
-
-		AdjustWindowRectEx(&window_rect, GetWindowStyle(main_window_handle), GetMenu(main_window_handle) != NULL, GetWindowExStyle(main_window_handle));
-
-		window_client_x0 = -window_rect.left;
-		window_client_y0 = -window_rect.top;
-
-		MoveWindow(main_window_handle, 0, 0,
-			window_rect.right - window_rect.left,
-			window_rect.bottom - window_rect.top,
-			FALSE);
-
-		ShowWindow(main_window_handle, SW_SHOW);
-	}
-
-	Game_Init();
-
-	while (1)
-	{
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			if (msg.message == WM_QUIT)
-				break;
-
-			TranslateMessage(&msg);
-
-			DispatchMessage(&msg);
-		}
-
-		Game_Main();
-	}
-
-	Game_ShutDown();
-
-	return 1;
-}
 

@@ -8,7 +8,7 @@
 #define DD_PIXEL_FORMAT555      15
 #define DD_PIXEL_FORMAT565      16
 #define DD_PIXEL_FORMAT888      24
-#define DD_PIXEL_FORMATALPHA888 32 
+#define DD_PIXEL_FORMATALPHA888 32
 
 #define DDRAW_INIT_STRUCT(ddstruct) { memset(&ddstruct,0,sizeof(ddstruct)); ddstruct.dwSize=sizeof(ddstruct); }
 
@@ -43,14 +43,14 @@ extern int back_lpitch ;
 
 
 extern int min_clip_x,
-	max_clip_x ,
-	min_clip_y ,
-	max_clip_y;
+    max_clip_x ,
+    min_clip_y ,
+    max_clip_y;
 
 extern int screen_width ,
-	screen_height ,
-	screen_bpp ,
-	screen_windowed;
+    screen_height ,
+    screen_bpp ,
+    screen_windowed;
 
 extern int window_client_x0;
 extern int window_client_y0;

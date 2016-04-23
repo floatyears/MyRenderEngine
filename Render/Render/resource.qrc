@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/texture" lang="tex">
+        <file>resource/cloud03.bmp</file>
+        <file>cloud03_640.bmp</file>
+        <file>resource/nebgreen03.bmp</file>
+    </qresource>
+    <qresource prefix="/model">
+        <file>resource/Death.FBX</file>
+        <file>resource/Diablo.fbx</file>
+        <file>resource/is_2.FBX</file>
+    </qresource>
+</RCC>

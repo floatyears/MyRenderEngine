@@ -3,8 +3,9 @@
 
 #include "poly.h"
 #include "math3d.h"
-#include "draw_windows.h"
-#include <Windows.h>
+#include "draw_qt.h"
+//#include "draw_windows.h"
+//#include <Windows.h>
 
 //定义面的属性
 #define POLY4D_ATTR_SHADE_MODE_PURE					0x0020
@@ -45,15 +46,25 @@
 
 #define MAX_LIGHTS									8
 
+typedef struct tagBITMAP {
+  long   bmType;
+  long   bmWidth;
+  long   bmHeight;
+  long   bmWidthBytes;
+  unsigned int   bmPlanes;
+  unsigned int   bmBitsPixel;
+  void* bmBits;
+} BITMAP, *PBITMAP;
+
 typedef struct RGBA_TYP
 {
 	union
 	{
 		int rgba;			//压缩格式
-		UCHAR rgba_M[4];	//数组格式
+        unsigned char rgba_M[4];	//数组格式
 		struct				//显式名称格式
 		{
-			UCHAR a, b, g, r;
+            unsigned char a, b, g, r;
 		};
 	};
 } RGBA, *RGBA_PTR;

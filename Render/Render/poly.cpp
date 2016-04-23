@@ -288,7 +288,16 @@ void Remove_Backfaces_Object4D(Object4D_PTR object, Camera4D_PTR camera)
 
 void Reset_RenderList4D(RenderList4D_PTR render_list)
 {
-	render_list->num_polys = 0;
+//	render_list->num_polys = 0;
+    for(int i = 0; i < render_list->num_polys; i++)
+    {
+        render_list->poly_ptrs[i]->state = POLY4D_STATE_ACTIVE;
+
+        //着色之前先恢复以前的颜色
+        render_list->poly_ptrs[i]->lit_color[0] = render_list->poly_ptrs[i]->vert_color[0];
+        render_list->poly_ptrs[i]->lit_color[1] = render_list->poly_ptrs[i]->vert_color[1];
+        render_list->poly_ptrs[i]->lit_color[2] = render_list->poly_ptrs[i]->vert_color[2];
+    }
 }
 
 //在渲染列表中插入多边形
@@ -562,7 +571,7 @@ void Clip_Poly_RenderList4D(RenderList4D_PTR renderlist, Camera4D_PTR cam, int c
 				}
 
 				//最后，重新计算法线长度
-				Vector4D_Build(&curr_poly->tverts[v0].v, &curr_poly->verts[v1].v, &u);
+                Vector4D_Build(&curr_poly->tverts[v0].v, &curr_poly->tverts[v1].v, &u);
 				Vector4D_Build(&curr_poly->tverts[v0].v, &curr_poly->tverts[v2].v, &v);
 
 				Vector4D_Cross(&u, &v, &n);
@@ -683,7 +692,7 @@ int Create_ZBuffer(ZBUFFER_PTR zb, int width, int height, int attr)
 	else if (attr & ZBUFFER_ATTR_32BIT)
 	{
 		zb->sizeq = width * height;
-		if (zb->zbuffer = (UCHAR *)malloc(width * height* sizeof(INT)))
+        if (zb->zbuffer = (UCHAR *)malloc(width * height* sizeof(float)))
 			return 1;
 		else
 			return 0;
@@ -714,5 +723,5 @@ int Delete_ZBuffer(ZBUFFER_PTR zb)
 
 void Clear_ZBuffer(ZBUFFER_PTR zb, UINT data)
 {
-	Mem_Set_QUAD((UINT *)zb->zbuffer, data, zb->sizeq);
+    Mem_Set_QUAD(zb->zbuffer, data, zb->sizeq*4);
 }

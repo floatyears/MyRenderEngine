@@ -1,5 +1,6 @@
 #include "light.h"
 
+
 MAT materials[MAX_MATERIALS];		//系统中的材质
 int num_materials;					//当前的材质数
 Light lights[MAX_LIGHTS];			//光源数组
@@ -8,8 +9,8 @@ int num_lights;						//当前的光源数
 int Reset_Materials_Mat(void)
 {
 	static int first_time = 1;
-	if (first_time)
-	{
+    if (first_time)
+    {
 		memset(materials, 0, MAX_MATERIALS*sizeof(MAT));
 		first_time = 0;
 	}
@@ -99,6 +100,7 @@ int Light_RenderList4D_World(RenderList4D_PTR renderlist, Camera4D_PTR cam, Ligh
 		if (!(curr_poly->state & POLY4D_STATE_ACTIVE) | curr_poly->state &POLY4D_STATE_BACKFACE | curr_poly->state & POLY4D_STATE_CLIPPED)
 			continue;
 
+
 		//int vindex0 = curr_poly->tverts[0];
 		//检查多边形的着色模式
 		if (curr_poly->attr & POLY4D_ATTR_SHADE_MODE_FLAT) //
@@ -128,6 +130,7 @@ int Light_RenderList4D_World(RenderList4D_PTR renderlist, Camera4D_PTR cam, Ligh
 			{
 				if (!lights[curr_light].state)
 				{
+
 					continue;
 				}
 
@@ -327,6 +330,7 @@ int Light_RenderList4D_World(RenderList4D_PTR renderlist, Camera4D_PTR cam, Ligh
 			{
 				if (!lights[curr_light].state)
 				{
+                    Light_PTR l = &lights[curr_light];
 					continue;
 				}
 
@@ -534,9 +538,9 @@ int Light_RenderList4D_World(RenderList4D_PTR renderlist, Camera4D_PTR cam, Ligh
 					}
 				}
 
-				curr_poly->lit_color[0] = RGBA32BIT(r_base, g_base, b_base, 255);
-				curr_poly->lit_color[1] = RGBA32BIT(r_base1, g_base1, b_base1, 255);
-				curr_poly->lit_color[2] = RGBA32BIT(r_base2, g_base2, b_base2, 255);
+                curr_poly->lit_color[0] = RGBA32BIT(r_sum, g_sum, b_sum, 255);
+                curr_poly->lit_color[1] = RGBA32BIT(r_sum1, g_sum1, b_sum1, 255);
+                curr_poly->lit_color[2] = RGBA32BIT(r_sum2, g_sum2, b_sum2, 255);
 			}
 		}
 		else //采用固定着色，将原来的颜色复制到前16位中

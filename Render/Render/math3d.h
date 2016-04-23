@@ -2,7 +2,7 @@
 #define H_MATH3D
 
 #include "poly.h"
-#include <Windows.h>
+//#include <Windows.h>
 
 #define PI         ((float)3.141592654f)
 #define DEG_TO_RAD(ang) ((ang)*PI/180.0)
@@ -46,7 +46,7 @@ void Vector3D_Normalize(Vector3D_PTR vector, Vector3D_PTR normal);
 void Plane3D_Init(Plane3D_PTR plane, Point3D_PTR p0, Vector3D_PTR normal, int normalize = 0);
 void Build_XYZ_Rotation_Matrix4X4(float theta_x, float theta_y, float theta_z, Matrix4X4_PTR matrix);
 
-inline void Mem_Set_WORD(UINT *dest, UINT data, int count)
+inline void Mem_Set_WORD(unsigned int *dest, unsigned int data, int count)
 {
 	// this function fills or sets unsigned 16-bit aligned memory
 	// count is number of words
@@ -71,13 +71,14 @@ inline void Mem_Set_WORD(UINT *dest, UINT data, int count)
 
 } // end Mem_Set_WORD
 
-inline void Mem_Set_QUAD(UINT *dest, UINT data, int count)
+inline void Mem_Set_QUAD(unsigned char* dest, unsigned int data, int count)
 {
 	// this function fills or sets unsigned 16-bit aligned memory
 	// count is number of words
 
 	//Write_Error("{");
 
+    //qDebug()<<"mem reset";
 	for (int i = 0; i < count; i++)
 	{
 		dest ++;
