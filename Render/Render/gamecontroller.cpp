@@ -371,7 +371,7 @@ void GameController::Recursive_Render(const aiScene *scene, const aiNode *node, 
                     qDebug() << "color: " << color;
                     poly.vert_color[k] = RGBA32BIT(color->r, color->g, color->b, 255);
                 }else{
-                    poly.vert_color[k] = RGBA32BIT(255, 255, 0, 255);
+                    poly.vert_color[k] = RGBA32BIT(255* k/face->mNumIndices, 255, 0, 255);
                 }
 
             }
